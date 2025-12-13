@@ -2,12 +2,14 @@ import dotenv from 'dotenv';
 import fetch from 'node-fetch';
 
 // Load environment variables
-dotenv.config();
+dotenv.config({
+  path: process.cwd() + '/.env'
+});
 
 class WeatherController {
   static init(app) {
     const api = app.basePath('/api')
-    api.get('/weather/gps', this.getWeather);
+    api.get('/clima/gps', this.getWeather);
   }
 
   static async getWeather(c) {

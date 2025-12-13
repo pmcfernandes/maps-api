@@ -1,4 +1,5 @@
 import { runQuery } from '../helpers/db.js';
+import ZipCodeController from './ZipCodeController.js';
 import WeatherController from './WeatherController.js';
 
 class AuthController {
@@ -9,7 +10,7 @@ class AuthController {
     api.get('/gis/distrito/:dtmnfr/limites', this.getLimits);
     api.get('/gis/distrito/:dtmnfr/municipios', this.getMunicipalitiesByDistrict);
     api.get('/gis/municipio/:dtmnfr', this.getMunicipality);
-    api.get('/gis/municipio/:dtmnfr/freguesia', this.getParishFromMunicipality);
+    api.get('/gis/municipio/:dtmnfr/freguesias', this.getParishFromMunicipality);
     api.get('/gis/municipio/:dtmnfr/limites', this.getLimits);
     api.get('/gis/freguesia/:dtmnfr', this.getParish);
     api.get('/gis/freguesia/:dtmnfr/limites', this.getLimits);
@@ -121,9 +122,10 @@ class AuthController {
       return c.json({ error: 'Municipality code (dtmnfr) is required' }, 400);
     }
     const sql = `
-      SELECT fid, dtmn as dtmnfr, municipio, nuts1, nuts2, nuts3, area_ha, perimetro_km, n_freguesias
-      FROM cont_municipios
-      WHERE dtmn = $1
+      SELECT mn.fid, mn.dtmn as dtmnfr, municipio, d.distrito,  mn.nuts1, mn.nuts2, mn.nuts3, mn.area_ha, mn.perimetro_km, mn.n_freguesias
+      FROM cont_municipios mn
+        INNER JOIN cont_distritos d ON d.dt = LEFT(mn.dtmn, 2)
+      WHERE mn.dtmn = $1
     `;
     const data = await runQuery(sql, [dtmnfr]);
     const rows = data.rows;
@@ -134,6 +136,7 @@ class AuthController {
     const municipality = rows.map(row => ({
       dtmnfr: row.dtmnfr,
       municipio: row.municipio,
+      distrito: row.distrito,
       nuts1: row.nuts1,
       nuts2: row.nuts2,
       nuts3: row.nuts3,
@@ -162,7 +165,7 @@ class AuthController {
       SELECT caa.fid, dtmnfr, freguesia, municipio, d.distrito, caa.area_ha, caa.perimetro_km
       FROM cont_areas_administrativas caa
 	      INNER JOIN cont_distritos d ON d.dt = LEFT(caa.dtmnfr, 2)
-      WHERE dtmnfr LIKE $1 || '%' AND perimetro_km > 0
+      WHERE dtmnfr LIKE $1 || '%' AND caa.perimetro_km > 0
     `;
 
     const data = await runQuery(sql, [dtmnfr]);
@@ -247,6 +250,8 @@ class AuthController {
     const perigoIncendio = await getPerigoIncendio(c);
     const weather = await WeatherController.getWeather(c);
     const weatherData = await weather.json();
+    const zipCodeProximity = await ZipCodeController.getZipCodeProximityByLatLng(c);
+    const zipCodes = await zipCodeProximity.json();
 
     return c.json({
       lat,
@@ -258,7 +263,8 @@ class AuthController {
       area_ha,
       perimetro_km,
       risco_incendio: perigoIncendio,
-      clima: weatherData
+      proximidade: zipCodes,
+      clima: weatherData,
     }, 200);
   }
 

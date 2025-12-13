@@ -7,22 +7,30 @@ import { serve } from '@hono/node-server'
 import GisController from './api/GisController.js';
 import ZipCodeController from './api/ZipCodeController.js';
 import WeatherController from './api/WeatherController.js';
+import FarmacyController from './api/FarmacyController.js';
 import DocsController from './api/DocsContoller.js';
 import { testDBConnection } from './helpers/db.js';
 
 // Load environment variables
-dotenv.config();
+dotenv.config({
+  path: process.cwd() + '/.env'
+});
 
 const app = new Hono();
 app.use(logger())
 app.use(prettyJSON())
 app.use('/api/*', cors())
 
+app.get('/', (c) => {
+  return c.redirect('/docs');
+});
+
 // Init controllers
 DocsController.init(app)
 GisController.init(app)
 ZipCodeController.init(app)
 WeatherController.init(app)
+FarmacyController.init(app)
 
 // Test DB connection and start server
 testDBConnection().then(() => {

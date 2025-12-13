@@ -2,15 +2,24 @@ import dotenv from 'dotenv';
 import { Pool } from 'pg';
 
 // Load environment variables
-dotenv.config();
+if (process.cwd().endsWith('utils')) { // Adjust path if running from utils directory
+  dotenv.config({
+      path: process.cwd() + '/../../.env'
+  });
+} else {
+  dotenv.config({
+     path: process.cwd() + '/.env'
+  });
+}
 
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST || '127.0.0.1',
   port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432,
+  database: process.env.DB_NAME || 'dbgis',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'password',
   ssl: false,
+  max: process.env.DB_MAX_POOL ? parseInt(process.env.DB_MAX_POOL) : 10,
 });
 
 const testDBConnection = async () => {
@@ -43,7 +52,7 @@ const runQuery = async (text, params) => {
     if (client) client.release();
   }
 };
-export { testDBConnection, runQuery };
+export { testDBConnection, runQuery, pool };
 
 
 

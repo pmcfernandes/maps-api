@@ -1,16 +1,20 @@
 # Map API
 
-Simple GIS API for districts, municipalities and parishes (Portugal-style codes).
+Simple GIS API for districts, municipalities and parishes (Portugal-style codes). See working version [here](https://mapas-api.impedro.com/docs)
 
 ## Project layout
 
 - `src/` - application source
   - `src/index.js` - server bootstrap and route registration
   - `src/api/` - API controllers
+    - `DocsController.js` - Open API documentation endpoint
     - `GisController.js` - GIS endpoints (districts, municipalities, parishes, limits, gps)
     - `WeatherController.js` - weather endpoint (uses OpenWeatherMap)
+    - `FarmacyController.js`- pharmacies endpoint (get all pharmacies for a municipality)
     - `ZipCodeController.js` - postal code lookup
   - `src/helpers/db.js` - database helpers
+  - `utils/` - utilities to optimize data
+    - `codigos-postais.js` - update latitude and longitude of a road in codigos_postais table
 - `swagger/` - OpenAPI specs
   - `swagger.yaml` - main OpenAPI spec
 
@@ -32,6 +36,7 @@ npm install
 Create a `.env` file (or set environment variables) with:
 
 ``` .env
+GEOCODING_API_KEY="your google geocode api key"
 WEATHER_API_KEY="your openweather api key"
 DB_HOST=127.0.0.1
 DB_PORT=5432
