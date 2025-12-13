@@ -31,12 +31,14 @@ npm install
 
 Create a `.env` file (or set environment variables) with:
 
+``` .env
 WEATHER_API_KEY="your openweather api key"
 DB_HOST=127.0.0.1
 DB_PORT=5432
 DB_NAME=dbgis
 DB_USER=dbgis_usr
 DB_PASSWORD=password
+```
 
 ## Run (development)
 
