@@ -1,0 +1,9 @@
+# deps
+.DS_Store
+.vscode/
+
+node_modules/
+.env
+
+package-lock.json
+npm-debug.log

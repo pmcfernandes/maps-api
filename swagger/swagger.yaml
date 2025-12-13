@@ -1,0 +1,442 @@
+openapi: 3.0.3
+info:
+  title: Map API - GIS
+  description: API for retrieving district, municipality and parish GIS information
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /api/gis/distritos:
+    get:
+      summary: List all districts
+      responses:
+        '200':
+          description: List of districts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistrictList'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/gis/distrito/{dtmnfr}:
+    get:
+      summary: Get district by code
+      parameters:
+        - name: dtmnfr
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\\d{2}$'
+      responses:
+        '200':
+          description: District
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/District'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: District not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/gis/distrito/{dtmnfr}/municipios:
+    get:
+      summary: Get municipalities for a district
+      parameters:
+        - name: dtmnfr
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\\d{2}$'
+      responses:
+        '200':
+          description: Municipalities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MunicipalityList'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No municipalities found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/gis/distrito/{dtmnfr}/limites:
+    get:
+      summary: Get district limits (GeoJSON)
+      parameters:
+        - name: dtmnfr
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\\d{2}$'
+      responses:
+        '200':
+          description: GeoJSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Limits'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/gis/municipio/{dtmnfr}:
+    get:
+      summary: Get municipality by code
+      parameters:
+        - name: dtmnfr
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\\d{4}$'
+      responses:
+        '200':
+          description: Municipality
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Municipality'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Municipality not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/gis/municipio/{dtmnfr}/freguesia:
+    get:
+      summary: Get parishes for a municipality
+      parameters:
+        - name: dtmnfr
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\\d{4}$'
+      responses:
+        '200':
+          description: Parishes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParishList'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No parishes found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/gis/municipio/{dtmnfr}/limites:
+    get:
+      summary: Get municipality limits (GeoJSON)
+      parameters:
+        - name: dtmnfr
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\\d{4}$'
+      responses:
+        '200':
+          description: GeoJSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Limits'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/gis/freguesia/{dtmnfr}:
+    get:
+      summary: Get parish by code
+      parameters:
+        - name: dtmnfr
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\\d{6}$'
+      responses:
+        '200':
+          description: Parish
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parish'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Parish not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/gis/freguesia/{dtmnfr}/limites:
+    get:
+      summary: Get parish limits (GeoJSON)
+      parameters:
+        - name: dtmnfr
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\\d{6}$'
+      responses:
+        '200':
+          description: GeoJSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Limits'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/gis/gps:
+    get:
+      summary: Get parish by coordinates
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+      responses:
+        '200':
+          description: Parish with district and coords
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParishWithDistrict'
+        '400':
+          description: Missing or invalid latitude/longitude
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No parish found for coordinates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      example:
+        error: "Parameter is missing or invalid"
+
+    District:
+      type: object
+      properties:
+        dtmnfr:
+          type: string
+        distrito:
+          type: string
+        nuts1:
+          type: string
+        area_ha:
+          type: number
+          format: float
+        perimetro_km:
+          type: number
+          format: float
+        n_municipios:
+          type: integer
+      required: [dtmnfr, distrito]
+      example:
+        dtmnfr: "01"
+        distrito: "Example District"
+        nuts1: "PT1"
+        area_ha: 54321.0
+        perimetro_km: 123.45
+        n_municipios: 10
+
+    DistrictList:
+      type: array
+      items:
+        $ref: '#/components/schemas/District'
+      example:
+        - dtmnfr: "01"
+          distrito: "Example District"
+          nuts1: "PT1"
+          area_ha: 54321.0
+          perimetro_km: 123.45
+          n_municipios: 10
+
+    Municipality:
+      type: object
+      properties:
+        dtmnfr:
+          type: string
+        municipio:
+          type: string
+        nuts1:
+          type: string
+        nuts2:
+          type: string
+        nuts3:
+          type: string
+        area_ha:
+          type: number
+          format: float
+        perimetro_km:
+          type: number
+          format: float
+        n_freguesias:
+          type: integer
+      required: [dtmnfr, municipio]
+      example:
+        dtmnfr: "0101"
+        municipio: "Example Municipality"
+        nuts1: "PT1"
+        nuts2: "PT11"
+        nuts3: "PT111"
+        area_ha: 12345.67
+        perimetro_km: 89.01
+        n_freguesias: 7
+
+    MunicipalityList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Municipality'
+      example:
+        - dtmnfr: "0101"
+          municipio: "Example Municipality"
+          nuts1: "PT1"
+          nuts2: "PT11"
+          nuts3: "PT111"
+          area_ha: 12345.67
+          perimetro_km: 89.01
+          n_freguesias: 7
+
+    Parish:
+      type: object
+      properties:
+        dtmnfr:
+          type: string
+        freguesia:
+          type: string
+        municipio:
+          type: string
+        distrito:
+          type: string
+        area_ha:
+          type: number
+          format: float
+        perimetro_km:
+          type: number
+          format: float
+      required: [dtmnfr, freguesia]
+      example:
+        dtmnfr: "010101"
+        freguesia: "Example Parish"
+        municipio: "Example Municipality"
+        distrito: "Example District"
+        area_ha: 12.34
+        perimetro_km: 1.23
+
+    ParishWithDistrict:
+      allOf:
+        - $ref: '#/components/schemas/Parish'
+        - type: object
+          properties:
+            lat:
+              type: number
+              format: double
+            lng:
+              type: number
+              format: double
+          example:
+            lat: 38.7
+            lng: -9.1
+
+    ParishList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Parish'
+      example:
+        - dtmnfr: "010101"
+          freguesia: "Example Parish"
+          municipio: "Example Municipality"
+          area_ha: 12.34
+          perimetro_km: 1.23
+
+    Limits:
+      type: object
+      properties:
+        geojson:
+          type: string
+          description: GeoJSON string result from PostGIS ST_AsGeoJSON
+      example:
+        geojson: '{"type":"FeatureCollection","features":[]}'
+
+
+
