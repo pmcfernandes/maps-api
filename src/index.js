@@ -5,10 +5,12 @@ import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 import { serve } from '@hono/node-server'
 import GisController from './api/GisController.js';
+import CountryController from './api/CountryController.js';
 import ZipCodeController from './api/ZipCodeController.js';
 import WeatherController from './api/WeatherController.js';
 import FarmacyController from './api/FarmacyController.js';
 import DocsController from './api/DocsContoller.js';
+import DangerController from './api/DangerController.js';
 import { testDBConnection } from './helpers/db.js';
 
 // Load environment variables
@@ -27,6 +29,8 @@ app.get('/', (c) => {
 
 // Init controllers
 DocsController.init(app)
+DangerController.init(app)
+CountryController.init(app)
 GisController.init(app)
 ZipCodeController.init(app)
 WeatherController.init(app)

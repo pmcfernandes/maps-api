@@ -1,6 +1,7 @@
 import { runQuery } from '../helpers/db.js';
 import ZipCodeController from './ZipCodeController.js';
 import WeatherController from './WeatherController.js';
+import DangerController from './DangerController.js';
 
 class AuthController {
   static init(app) {
@@ -228,7 +229,7 @@ class AuthController {
    * @param {Object} c - Context object
    */
   static async getLatLng(c) {
-    const { lat, lng } = await c.req.query();
+    const { lat, lng, detalhe } = await c.req.query();
     if (!lat || !lng) {
       return c.json({ error: 'Latitude and Longitude are required' }, 400);
     }
@@ -247,9 +248,33 @@ class AuthController {
     }
 
     const { dtmnfr, freguesia, municipio, distrito, area_ha, perimetro_km } = rows[0];
-    const perigoIncendio = await getPerigoIncendio(c);
+
+    if (!detalhe || detalhe === '0') {
+      return c.json({
+        lat,
+        lng,
+        dtmnfr,
+        freguesia,
+        municipio,
+        distrito,
+        area_ha,
+        perimetro_km,
+      }, 200);
+    }
+
+    // Get additional data: fire danger
+    const perigoIncendio = await DangerController.getFireDanger(c);
+    const incendio = await perigoIncendio.json();
+
+    // Get additional data: inundation danger
+    const perigoInundacao = await DangerController.getInundationDanger(c);
+    const inundacao = await perigoInundacao.json();
+
+    // Get additional data: weather
     const weather = await WeatherController.getWeather(c);
     const weatherData = await weather.json();
+
+    // Get additional data: zip code proximity
     const zipCodeProximity = await ZipCodeController.getZipCodeProximityByLatLng(c);
     const zipCodes = await zipCodeProximity.json();
 
@@ -262,8 +287,9 @@ class AuthController {
       distrito,
       area_ha,
       perimetro_km,
-      risco_incendio: perigoIncendio,
-      proximidade: zipCodes,
+      risco_incendio: incendio,
+      risco_inundacao: inundacao,
+      ruas_proximas: zipCodes,
       clima: weatherData,
     }, 200);
   }
@@ -292,28 +318,6 @@ class AuthController {
       ...geojson
     }, 200);
   }
-}
-
-async function getPerigoIncendio(c) {
-  const { lat, lng } = await c.req.query();
-
-  const sql = `
-    SELECT ir.gridcode, g.description
-    FROM perigosidade_incendio_rural ir
-	    INNER JOIN incendio_gridcode g ON g.id = ir.gridcode
-    WHERE ST_Contains(geom, ST_Transform(ST_SetSRID(ST_MakePoint($2, $1), 4326), 3763))
-  `;
-
-  const data = await runQuery(sql, [lat, lng]);
-  const rows = data.rows;
-  if (rows.length === 0) {
-    return null;
-  }
-
-  return {
-    risco: parseInt(rows[0].gridcode),
-    descricao: rows[0].description
-  };
 }
 
 export default AuthController;
